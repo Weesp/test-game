@@ -1,6 +1,14 @@
 extends RefCounted
 
 const WARRIOR = preload("res://art/approved/ivar.png")
+const COMPANIONS = {
+	"mira": preload("res://art/approved/mira.png"),
+	"vesta": preload("res://art/approved/vesta.png"),
+}
+const PORTRAIT_REGIONS = {
+	"mira": Rect2(400, 15, 310, 350),
+	"vesta": Rect2(345, 5, 330, 375),
+}
 const CAST = preload("res://art/cast-draft.png")
 const CREATURES = {
 	"griffin": preload("res://art/approved/griffin.png"),
@@ -12,13 +20,14 @@ const CREATURES = {
 	"kelpie": preload("res://art/approved/kelpie.png"),
 }
 const SILHOUETTE = preload("res://scripts/silhouette.gdshader")
-const FOOT_ANCHORS = {"ivar": 0.945, "troll": 0.965, "dryad": 0.93, "griffin": 0.96, "kelpie": 0.95, "wyvern": 0.81, "mimic_shield": 0.96, "mimic_chest": 0.96}
+const FOOT_ANCHORS = {"ivar": 0.945, "mira": 0.966, "vesta": 0.963, "troll": 0.965, "dryad": 0.93, "griffin": 0.96, "kelpie": 0.95, "wyvern": 0.81, "mimic_shield": 0.96, "mimic_chest": 0.96}
 static var prepared: Dictionary = {}
 
 static func prepare(parent: Node) -> void:
 	prepared.clear()
 	var originals := CREATURES.duplicate()
 	originals["ivar"] = WARRIOR
+	originals.merge(COMPANIONS)
 	for id in originals:
 		var texture: Texture2D = originals[id]
 		var viewport := SubViewport.new()
@@ -43,6 +52,8 @@ static func texture_for(id: String) -> Texture2D:
 		return prepared[id]
 	if id == "ivar":
 		return WARRIOR
+	if COMPANIONS.has(id):
+		return COMPANIONS[id]
 	if CREATURES.has(id):
 		return CREATURES[id]
 	var atlas := AtlasTexture.new()
@@ -66,6 +77,9 @@ static func portrait(id: String) -> AtlasTexture:
 	if id == "ivar":
 		atlas.atlas = texture_for("ivar")
 		atlas.region = Rect2(WARRIOR.get_width() * 0.28, WARRIOR.get_height() * 0.01, WARRIOR.get_width() * 0.45, WARRIOR.get_height() * 0.30)
+	elif COMPANIONS.has(id):
+		atlas.atlas = texture_for(id)
+		atlas.region = PORTRAIT_REGIONS[id]
 	else:
 		atlas.atlas = CAST
 		var cell := Vector2(CAST.get_width() / 5.0, CAST.get_height())

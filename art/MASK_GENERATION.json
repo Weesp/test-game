@@ -61,6 +61,24 @@
       "source": "exec-a31f862d-49c3-4419-9841-78e6baf71d8f.png",
       "mask": "art/masks/kelpie.png",
       "mask_source": "exec-7cb5be4f-6d30-4b69-983f-4e98dbda3468.png"
+    },
+    {
+      "id": "mira",
+      "original": "art/approved/mira.png",
+      "mask": "art/masks/mira.png",
+      "mask_source": "exec-eb6a881c-62c5-41ba-ba14-9d5f4540a81b.png",
+      "prompt": "Create a precise binary foreground segmentation mask for the attached image, for a game engine alpha matte. EDIT the input: every pixel belonging to the character and ALL her equipment must be solid pure white (#FFFFFF). Every background pixel and floor shadow must be solid pure black (#000000). Keep the EXACT original 1024x1536 canvas, original subject scale and pixel position: do not zoom, crop, move, reframe, or change pose. Trace exact external silhouette including fingers, hair, weapon tips, floating crystals, staff and lantern. Negative spaces between limbs, between staff and body, between fingers and holes through equipment must be black. Inside the subject silhouette must be completely solid white, including dark clothing and hair and lantern glass. No details or grey shading within the white silhouette. No interior line art. No colored character, no background texture, no pattern, no labels. Output only this flat black and white MASK, not a cutout or illustration. Black background is required; do not use transparency. Ignore faint floating smoke and background glow; retain solid crystal fragments."
+    },
+    {
+      "id": "vesta",
+      "original": "art/approved/vesta.png",
+      "mask": "art/masks/vesta.png",
+      "mask_source": "exec-e1b3bfc5-2902-4433-87ff-bcafe92d2e96.png",
+      "prompt": "Create a precise binary foreground segmentation mask for the attached image, for a game engine alpha matte. EDIT the input: every pixel belonging to the character and ALL her equipment must be solid pure white (#FFFFFF). Every background pixel and floor shadow must be solid pure black (#000000). Keep the EXACT original 1024x1536 canvas, original subject scale and pixel position: do not zoom, crop, move, reframe, or change pose. Trace exact external silhouette including fingers, hair, weapon tips, floating crystals, staff and lantern. Negative spaces between limbs, between staff and body, between fingers and holes through equipment must be black. Inside the subject silhouette must be completely solid white, including dark clothing and hair and lantern glass. No details or grey shading within the white silhouette. No interior line art. No colored character, no background texture, no pattern, no labels. Output only this flat black and white MASK, not a cutout or illustration. Black background is required; do not use transparency. Ignore faint floating smoke and background glow; retain solid crystal fragments.",
+      "correction_prompts": [
+        "Correct the first image (binary segmentation MASK), using second image (original approved character) to identify solid clothing. Preserve exact 1024x1536 canvas, silhouette position, scale and pose. White = entire character AND ALL CLOAK FABRIC AND EQUIPMENT. Black = exterior background only. CRITICAL fix: the large black cutout directly under her bent arm on the LEFT side of image is actually CLOAK behind the arm: fill it solid WHITE. Small black slit above the satchel on left is also clothing: fill WHITE. The large black cutout on RIGHT between her torso, raised lantern arm, lantern and belt mace is also backed by olive CLOAK down to the cloak edge shown in original: fill the cape extent WHITE, following its actual exterior edge at right. Preserve true background between legs and below hem and the open circular handle of lantern. Keep all equipment including mace silhouette solid white without internal strokes. Keep outside contours of head, boots, hands and lantern unchanged. Return only corrected solid black-and-white mask without any interior clothing lines or shading, no color, no transparency.",
+        "Edit this BLACK AND WHITE MASK. REMOVE all black internal marks enclosed inside the white silhouette, filling them completely PURE WHITE. Especially remove the entire black outlined mace shape at right hip, the black slash at left waist, and the tiny black dot below lantern handle. There must be NO internal outlines or strokes or disconnected black marks anywhere inside solid white body/cloak. Preserve the one true black circular hole within the lantern HANDLE at upper right. Preserve EXACT external silhouette, background and open space between boots. Return otherwise unchanged 1024x1536 solid white silhouette on pure black background, no shading, no details."
+      ]
     }
   ]
 }

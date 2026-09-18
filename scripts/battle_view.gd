@@ -45,7 +45,7 @@ func figure_height(id: String) -> float:
 		if art == "griffin":
 			return size.y * 0.305
 		return size.y * (0.36 if game.data.combat.enemies.size() > 2 else 0.43)
-	return size.y * (0.405 if id == "ivar" else 0.345)
+	return size.y * (0.405 if id == "ivar" else 0.39)
 
 func position_for(id: String) -> Vector2:
 	if id.begins_with("enemy_"):
