@@ -345,9 +345,25 @@ func _party_content(box: VBoxContainer) -> void:
 
 func _travel() -> void:
 	map_origin = MapView.POINTS[game.data.location]
-	if game.travel(selected):
-		animate_next = true
-		overlay_mode = ""
+	if not game.travel(selected):
+		return
+	animate_next = true
+	overlay_mode = ""
+	var node: Dictionary = World.NODES[game.data.location]
+	if node.kind == "camp":
+		overlay_mode = "location"
+	elif game.data.location not in game.data.resolved:
+		match node.kind:
+			"fight":
+				if game.start_combat():
+					animate_next = false
+					active_hero = _first_actor()
+					enemy_target = 0
+			"herbs", "relic":
+				if game.resolve_event():
+					overlay_mode = "story"
+			"traveler":
+				overlay_mode = "location"
 	build_ui()
 
 func _rest() -> void:
