@@ -1,0 +1,5 @@
+.godot/
+verification/*
+!verification/.gdignore
+*.tmp
+export_presets.cfg
