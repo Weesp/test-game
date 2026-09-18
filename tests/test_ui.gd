@@ -17,6 +17,10 @@ func expect(condition: bool, name: String) -> void:
 func settle() -> void:
 	for i in range(4):
 		await process_frame
+	var deadline := Time.get_ticks_msec() + 10000
+	while app.combat_busy and Time.get_ticks_msec() < deadline:
+		await process_frame
+	expect(not app.combat_busy, "Animation finishes and releases input")
 
 func buttons(node: Node) -> Array:
 	var found: Array = []
@@ -100,6 +104,7 @@ func _run() -> void:
 	root.mode = Window.MODE_WINDOWED
 	root.size = Vector2i(1600, 900)
 	app = Main.instantiate()
+	app.animation_speed = 20.0
 	app.game.persistence_enabled = false
 	root.add_child(app)
 	await settle()

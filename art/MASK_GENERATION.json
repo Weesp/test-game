@@ -1,0 +1,66 @@
+{
+  "mode": "built-in ImageGen",
+  "rendering": "Original approved RGB + generated silhouette mask, composed once into cached transparent Godot viewports. No repainting of the approved originals.",
+  "prompt": "Create a precise binary foreground segmentation mask for the attached image, for a game engine alpha matte. EDIT the input: every pixel belonging to the character/creature and its equipment must be solid pure white (#FFFFFF). Every background pixel and floor shadow must be solid pure black (#000000). Keep the EXACT original image canvas aspect ratio, original subject scale and pixel position: do not zoom, crop, move, reframe, or change pose. Trace the exact external silhouette including fingers, claws, hair, horns, wings, weapon tips and tail. Negative spaces between limbs and holes through wings must be black. Inside the subject silhouette must be completely solid white, including dark clothing, eyes and mouth cavities that are part of the subject. No details or grey shading within the white silhouette. No colored character, no background texture, no pattern, no labels. Output only this flat black and white MASK, not a cutout or illustration. Black background is required; do not use transparency.",
+  "items": [
+    {
+      "id": "ivar",
+      "original": "art/approved/ivar.png",
+      "source": "exec-59825f7c-1c13-4d1a-a7ff-c19eae177285.png",
+      "mask": "art/masks/ivar.png",
+      "mask_source": "exec-2ed40e5e-7c10-4b60-acde-ffc76b081800.png",
+      "mask_correction_prompt": "Edit this binary alpha mask only. Fill all the thin BLACK INTERNAL LINE STROKES inside the white silhouette with solid white: outlines of the sword blade/guard, belt dagger, armor, and axe. Keep real negative spaces between legs, below cloak and inside the axe cutout black. The silhouette must be a solid white filled body, no interior line art. Maintain exact canvas, subject position and scale. White is foreground; black is background. Do not add color, shading, grey or new shapes. Do not change anything else. Return corrected black and white mask."
+    },
+    {
+      "id": "griffin",
+      "original": "art/approved/griffin.png",
+      "source": "exec-d6723ff7-4fd5-4216-92ef-81a064e5eaa9.png",
+      "mask": "art/masks/griffin.png",
+      "mask_source": "exec-bde8bc26-3b8d-47da-b43a-959abce41d29.png"
+    },
+    {
+      "id": "troll",
+      "original": "art/approved/troll.png",
+      "source": "exec-602b2758-f9d9-40b0-b1c2-696563fed789.png",
+      "mask": "art/masks/troll.png",
+      "mask_source": "exec-75577723-90c6-455f-b315-0044fab612a2.png",
+      "mask_correction_prompt": "Edit this binary alpha mask only. The BLACK MOUTH CAVITY in the upper-left face must be solid white, all the way between upper and lower teeth, including its entire interior. It is part of the head, not background. Keep the outside silhouette exactly unchanged and keep background gaps between limbs and between tree roots black. Maintain exact canvas, subject position and scale. White is foreground; black is background. Do not add color, shading, grey or new shapes. Do not change anything else. Return corrected black and white mask."
+    },
+    {
+      "id": "dryad",
+      "original": "art/approved/dryad.png",
+      "source": "exec-160a30d7-4c0c-4f3d-9970-f6fd64aaf542.png",
+      "mask": "art/masks/dryad.png",
+      "mask_source": "exec-f0a4bbc6-858c-48c3-bfca-5d459cb0877b.png"
+    },
+    {
+      "id": "wyvern",
+      "original": "art/approved/wyvern.png",
+      "source": "exec-ebedea41-1516-443f-ab81-b9d1d85e0985.png",
+      "mask": "art/masks/wyvern.png",
+      "mask_source": "exec-5f4f0c65-e5d7-468f-bd19-5323f5f475a2.png"
+    },
+    {
+      "id": "mimic_shield",
+      "original": "art/approved/mimic_shield.png",
+      "source": "exec-520f3218-e4c0-4e80-a597-a8d2c16d2922.png",
+      "mask": "art/masks/mimic_shield.png",
+      "mask_source": "exec-1b9a623e-7748-4584-9311-db8ccaa6eb50.png",
+      "mask_correction_prompt": "Edit this binary alpha mask only. Fill the entire huge BLACK MOUTH INSIDE THE SHIELD at the right with solid white, from the top lip all the way to the lower lip, including space between teeth. This mouth is part of the creature, not a hole through the body. Keep the outside silhouette and all real background gaps between limbs exactly unchanged. Maintain exact canvas, subject position and scale. White is foreground; black is background. Do not add color, shading, grey or new shapes. Do not change anything else. Return corrected black and white mask."
+    },
+    {
+      "id": "mimic_chest",
+      "original": "art/approved/mimic_chest.png",
+      "source": "exec-fb64d259-986b-4c38-869b-124425475093.png",
+      "mask": "art/masks/mimic_chest.png",
+      "mask_source": "exec-2d7c8be5-196e-4ccd-93b5-59069df6c017.png"
+    },
+    {
+      "id": "kelpie",
+      "original": "art/approved/kelpie.png",
+      "source": "exec-a31f862d-49c3-4419-9841-78e6baf71d8f.png",
+      "mask": "art/masks/kelpie.png",
+      "mask_source": "exec-7cb5be4f-6d30-4b69-983f-4e98dbda3468.png"
+    }
+  ]
+}

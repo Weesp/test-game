@@ -5,6 +5,8 @@ const SAVE_PATH = "user://campaign.json"
 var data: Dictionary = {}
 var last_message := ""
 var persistence_enabled := true
+# Transient presentation events; rules and saves never depend on animation timing.
+var combat_events: Array = []
 
 func _init() -> void:
 	reset(false)
@@ -119,7 +121,7 @@ func start_combat() -> bool:
 		return false
 	var enemies: Array = []
 	for spec in World.ENCOUNTERS[node.encounter]:
-		enemies.append({"name": spec.name, "hp": spec.hp, "max_hp": spec.hp, "attack": spec.attack})
+		enemies.append({"name": spec.name, "art": spec.art, "hp": spec.hp, "max_hp": spec.hp, "attack": spec.attack})
 	data.combat = {"enemies": enemies, "round": 1, "acted": [], "guard": {}, "status": "active"}
 	record("Бой: " + node.name + ". Выберите героя, цель и действие.")
 	save_game()
@@ -129,6 +131,7 @@ func can_act(id: String) -> bool:
 	return in_combat() and data.combat.status == "active" and not get_hero(id).is_empty() and get_hero(id).hp > 0 and id not in data.combat.acted
 
 func act(id: String, action: String, target := 0) -> bool:
+	combat_events.clear()
 	if not can_act(id) or action not in ["attack", "guard", "ability", "advanced"]:
 		return false
 	var h := get_hero(id)
@@ -141,6 +144,7 @@ func act(id: String, action: String, target := 0) -> bool:
 	if action == "attack" or (action == "ability" and id == "mira"):
 		if target < 0 or target >= battle.enemies.size() or battle.enemies[target].hp <= 0:
 			return false
+	var before := data.duplicate(true)
 	var result := ""
 	match action:
 		"attack":
@@ -174,6 +178,12 @@ func act(id: String, action: String, target := 0) -> bool:
 			result = spec.name + ": " + spec.advanced + ". " + spec.advanced_hint + "."
 	battle.acted.append(id)
 	record(result)
+	var effect := "strike"
+	if action == "guard" or (action == "advanced" and id == "ivar"):
+		effect = "guard"
+	elif action != "attack":
+		effect = {"ivar": "cleave", "mira": "fire" if action == "ability" else "ice", "vesta": "heal"}[id]
+	_presentation_event(id, effect, before)
 	if battle.enemies.all(func(e): return e.hp <= 0):
 		_victory()
 	elif living().all(func(ally): return ally.id in battle.acted):
@@ -196,10 +206,12 @@ func _enemy_phase() -> void:
 		if targets.is_empty():
 			break
 		var target: Dictionary = targets[(int(battle.round) - 1 + index) % targets.size()]
+		var before := data.duplicate(true)
 		var shield := int(battle.guard.get(target.id, 0))
 		var damage := maxi(0, int(enemy.attack) - shield)
 		battle.guard[target.id] = maxi(0, shield - int(enemy.attack))
 		target.hp = maxi(0, int(target.hp) - damage)
+		_presentation_event("enemy_" + str(index), "strike", before, target.id)
 		reports.append("%s → %s: %d" % [enemy.name, World.hero(target.id).name, damage])
 	if living().is_empty():
 		battle.status = "defeat"
@@ -209,6 +221,21 @@ func _enemy_phase() -> void:
 		battle.acted.clear()
 		battle.guard.clear()
 		record("Враги: " + "; ".join(reports) + ". Раунд %d — ваш ход." % battle.round)
+
+func _presentation_event(actor: String, effect: String, before: Dictionary, explicit_target := "") -> void:
+	var changes: Array = []
+	for i in range(data.heroes.size()):
+		var h: Dictionary = data.heroes[i]
+		var old: Dictionary = before.heroes[i]
+		var guard := int(data.combat.guard.get(h.id, 0)) - int(before.combat.guard.get(h.id, 0))
+		if old.hp != h.hp or guard != 0 or h.id == explicit_target:
+			changes.append({"id": h.id, "before": old.hp, "after": h.hp, "guard": maxi(0, guard)})
+	for i in range(data.combat.enemies.size()):
+		var e: Dictionary = data.combat.enemies[i]
+		var old: Dictionary = before.combat.enemies[i]
+		if old.hp != e.hp:
+			changes.append({"id": "enemy_" + str(i), "before": old.hp, "after": e.hp, "guard": 0})
+	combat_events.append({"actor": actor, "effect": effect, "changes": changes, "after": data.duplicate(true)})
 
 func _victory() -> void:
 	data.combat.status = "victory"

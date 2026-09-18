@@ -23,10 +23,17 @@ var map_origin := Vector2.ZERO
 var animate_next := false
 var toast := ""
 var toast_timer: Timer
+var combat_busy := false
+var animation_speed := 1.0
+var art_demo := false
 
 func _ready() -> void:
+	preload("res://scripts/sprite_art.gd").prepare(self)
 	get_window().min_size = Vector2i(1000, 650)
 	var args := OS.get_cmdline_user_args()
+	art_demo = "--art-demo" in args
+	if art_demo or "--demo-battle" in args:
+		game.persistence_enabled = false
 	var index := args.find("--capture")
 	if index >= 0 and index + 1 < args.size():
 		capture_path = args[index + 1]
@@ -35,7 +42,7 @@ func _ready() -> void:
 		get_window().size = Vector2i(1600, 900)
 	elif game.persistence_enabled:
 		game.load_game()
-	if "--demo-battle" in args:
+	if "--demo-battle" in args or art_demo:
 		game.persistence_enabled = false
 		game.reset(false)
 		game.travel("fork")
@@ -52,6 +59,8 @@ func _ready() -> void:
 	toast_timer.timeout.connect(func(): toast = ""; _refresh_hud())
 	add_child(toast_timer)
 	build_ui()
+	if art_demo:
+		_demo_encounter("grove")
 	if not capture_path.is_empty():
 		_capture.call_deferred()
 
@@ -84,6 +93,8 @@ func _toggle_fullscreen() -> void:
 	get_window().mode = Window.MODE_WINDOWED if get_window().mode == Window.MODE_FULLSCREEN else Window.MODE_FULLSCREEN
 
 func build_ui() -> void:
+	if combat_busy:
+		return
 	if is_instance_valid(root_layout):
 		remove_child(root_layout)
 		root_layout.queue_free()
@@ -102,6 +113,7 @@ func build_ui() -> void:
 		battle_view.game = game
 		battle_view.selected_enemy = enemy_target
 		battle_view.active_hero = active_hero
+		battle_view.animation_speed = animation_speed
 		battle_view.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		root_layout.add_child(battle_view)
 		battle_view.hero_selected.connect(_choose_hero)
@@ -137,7 +149,7 @@ func _refresh_hud() -> void:
 	region.position = Vector2(36, 28)
 	hud.add_child(region)
 	region.add_child(_label(World.NODES[game.data.location].name if game.in_combat() else "Земли погасших огней", 21, INK))
-	region.add_child(_label("Раунд %d · выберите героя" % game.data.combat.round if game.in_combat() and game.data.combat.status == "active" else "Окрестности переправы", 12, MUTED))
+	region.add_child(_label("Ход разыгрывается…" if combat_busy else ("Раунд %d · выберите героя" % game.data.combat.round if game.in_combat() and game.data.combat.status == "active" else "Окрестности переправы"), 12, MUTED))
 	var bar := HBoxContainer.new()
 	bar.add_theme_constant_override("separation", 12)
 	_place(hud, bar, Vector2(0.5, 0), Vector2(-92, 20), Vector2(184, 48))
@@ -157,6 +169,7 @@ func _refresh_hud() -> void:
 		var portrait := Portrait.new()
 		portrait.name = spec.id
 		portrait.hero_id = spec.id
+		portrait.disabled = combat_busy
 		portrait.tint = spec.color
 		portrait.health = float(h.hp) / spec.max_hp
 		portrait.chosen = game.in_combat() and active_hero == spec.id and game.can_act(spec.id)
@@ -169,12 +182,21 @@ func _refresh_hud() -> void:
 		var note := _label(toast, 15, INK, true)
 		note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		_place(hud, note, Vector2(0.5, 0), Vector2(-360, 82), Vector2(720, 65))
-	if game.in_combat() and game.data.combat.status != "active" and overlay_mode.is_empty():
+	if art_demo:
+		var previews := HBoxContainer.new()
+		_place(hud, previews, Vector2(1, 1), Vector2(-415, -67), Vector2(390, 42))
+		for entry in [["Роща", "grove"], ["Переправа", "bridge"], ["Часовня", "sentinel"]]:
+			previews.add_child(_button(entry[0], _demo_encounter.bind(entry[1])))
+		var demo_note := _label("ПРОСМОТР АРТОВ · поход не сохраняется", 11, MUTED)
+		_place(hud, demo_note, Vector2(1, 1), Vector2(-415, -91), Vector2(390, 20))
+	if not combat_busy and game.in_combat() and game.data.combat.status != "active" and overlay_mode.is_empty():
 		overlay_mode = "result"
 	if not overlay_mode.is_empty():
 		_popup(hud)
 
 func _open(mode: String) -> void:
+	if combat_busy:
+		return
 	overlay_mode = mode
 	_refresh_hud()
 
@@ -358,6 +380,8 @@ func _first_actor() -> String:
 	return "ivar"
 
 func _select_enemy(index: int) -> void:
+	if combat_busy:
+		return
 	if game.in_combat() and game.data.combat.status == "active" and game.data.combat.enemies[index].hp > 0:
 		enemy_target = index
 		battle_view.selected_enemy = index
@@ -365,6 +389,8 @@ func _select_enemy(index: int) -> void:
 		_refresh_hud()
 
 func _choose_hero(id: String) -> void:
+	if combat_busy:
+		return
 	if game.in_combat() and not game.can_act(id):
 		return
 	active_hero = id
@@ -377,11 +403,38 @@ func _choose_hero(id: String) -> void:
 		_open("party")
 
 func _perform(action: String) -> void:
+	if combat_busy or not game.in_combat():
+		return
+	var before: Dictionary = game.data.duplicate(true)
 	if game.act(active_hero, action, enemy_target):
+		combat_busy = true
+		overlay_mode = ""
+		toast = ""
+		toast_timer.stop()
+		_refresh_hud()
+		await battle_view.play_events(game.combat_events.duplicate(true), before)
+		combat_busy = false
 		toast = game.last_message
 		toast_timer.start(6)
 		active_hero = _first_actor()
 		overlay_mode = "" if game.data.combat.status == "active" else "result"
+	build_ui()
+
+func _demo_encounter(location: String) -> void:
+	if combat_busy:
+		return
+	game.persistence_enabled = false
+	game.reset(false)
+	game.data.location = location
+	game.data.visited.append(location)
+	game.data.level = 2
+	game._restore_party()
+	game.start_combat()
+	selected = location
+	active_hero = "ivar"
+	enemy_target = 0
+	overlay_mode = ""
+	toast = ""
 	build_ui()
 
 func _place(parent: Control, child: Control, anchor: Vector2, offset: Vector2, extent: Vector2) -> void:
@@ -417,7 +470,7 @@ func _button(text: String, callback: Callable, disabled := false) -> Button:
 	var button := Button.new()
 	button.text = text
 	button.custom_minimum_size.y = 42
-	button.disabled = disabled
+	button.disabled = disabled or combat_busy
 	button.add_theme_font_size_override("font_size", 15)
 	button.pressed.connect(callback)
 	return button
