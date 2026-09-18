@@ -8,10 +8,11 @@ config/features=PackedStringArray("4.3", "GL Compatibility")
 config/description="Сюжетная RPG: путешествие, отряд, ограниченные способности и отдых в убежищах."
 
 [display]
-window/size/viewport_width=1440
+window/size/viewport_width=1600
 window/size/viewport_height=900
-window/size/window_width_override=1440
+window/size/window_width_override=1600
 window/size/window_height_override=900
+window/size/mode=3
 window/stretch/mode="canvas_items"
 
 [rendering]
